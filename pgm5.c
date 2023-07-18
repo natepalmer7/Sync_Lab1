@@ -59,11 +59,18 @@ void *philospher(void *num){
  
 void take_fork(int ph_num){
     // your line here
+    sem_wait(&mutex); // get the mutex semaphore to protect the critical section
+    
     state[ph_num] = HUNGRY;
         printf("Philosopher %d is Hungry\n",ph_num+1);
     test(ph_num);
+    
     // your line here
+    sem_post(&mutex); // let go of the mutex semaphore
+    
     // your line here
+    sem_wait(&S[ph_num]); // Wait for the S[ph_num] semaphore, which allows the philosopher to start eating
+    
     sleep(1);
 }
  
@@ -74,17 +81,23 @@ void test(int ph_num){
         sleep(2);
             printf("Philosopher %d takes fork %d and %d\n",ph_num+1,LEFT+1,ph_num+1);
             printf("Philosopher %d is Eating\n",ph_num+1);
+        
         // your line here
+        sem_post(&S[ph_num]); // signal the S[ph_num] semaphore to give permission to the philosopher to start eating
     }
 }
  
  
 void put_fork(int ph_num){
     // your line here
+    sem_wait(&mutex); // get the the mutex semaphore to protect the critical section
+    
     state[ph_num] = THINKING;
         printf("Philosopher %d putting fork %d and %d down\n",ph_num+1,LEFT+1,ph_num+1);
         printf("Philosopher %d is thinking\n",ph_num+1);
     test(LEFT);
     test(RIGHT);
+    
     // your line here
+    sem_post(&mutex); // Release the mutex semaphore
 }

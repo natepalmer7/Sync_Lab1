@@ -7,6 +7,18 @@
 
 #define MYSTACKSIZE 40960
 
+/*
+The divergence in results from pgm2.c and pgm3.c originates from the way the threads interact with shared resources.
+
+pgm3.c adopts a synchronized method for accessing these shared assets, using mutex locks. This ensures an output that is both orderly and more foreseeable.
+
+On the other hand, pgm2.c lacks the code segments required to lock and unlock the mutex.
+
+Below, the variations between pgm2.c and pgm3.c are further elaborated.
+
+
+*/
+
 pthread_mutex_t m;
 
 void *odd(void *max)
@@ -14,12 +26,12 @@ void *odd(void *max)
   int i;
   struct timeval tp;
 
-  pthread_mutex_lock(&m);
+  pthread_mutex_lock(&m); // this gets the the mutex lock
   for (i = 0; i < 10; i++) {
     printf("odd %d\n", i);
     sleep(1);
   }
-  pthread_mutex_unlock(&m);
+  pthread_mutex_unlock(&m); // this lets go of the the mutex lock
 }
 
 void *even(void *max)
@@ -27,12 +39,12 @@ void *even(void *max)
   int i;
   struct timeval tp;
  
-  pthread_mutex_lock(&m);
+  pthread_mutex_lock(&m); // this gets the mutex lock
   for (i = 0; i < 10; i++) {
     printf("even %d\n", i);
     sleep(1);
   }
-  pthread_mutex_unlock(&m);
+  pthread_mutex_unlock(&m); // lets go of the the mutex lock
 }
 
 main()
@@ -76,12 +88,13 @@ main()
   }
   printf("created the second thread\n");
 
-  pthread_mutex_lock(&m);
+  pthread_mutex_lock(&m); // this gets the the mutex lock
   for (i = 0; i < 10; i++) {
     printf("main %d\n", i);
     sleep(1);
   }
-  pthread_mutex_unlock(&m);
+  pthread_mutex_unlock(&m); // this lets go of the mutex lock
   pthread_join(*th1, 0);
   pthread_join(*th2, 0);
 }
+
